@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/haxul/go-ms/handlers"
 	"log"
 	"net/http"
 	"os"
@@ -15,14 +16,14 @@ func main() {
 	logger := log.New(os.Stdout, "products-api ", log.LstdFlags)
 
 	// create the handlers
-	//ph := handlers.NewProducts(logger)
+	ph := handlers.NewProducts(logger)
 
 	// create a new serve mux and register the handlers
 	sm := mux.NewRouter()
 
-	//sm.Handle("/products", ph)
+	getRouter := sm.Methods("GET").Subrouter()
+	getRouter.HandleFunc("/products", ph.GetProducts)
 
-	// create a new server
 	s := http.Server{
 		Addr:         ":9090",           // configure the bind address
 		Handler:      sm,                // set the default handler
@@ -53,5 +54,5 @@ func main() {
 
 	// gracefully shutdown the server, waiting max 30 seconds for current operations to complete
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	s.Shutdown(ctx)
+	_ = s.Shutdown(ctx)
 }
