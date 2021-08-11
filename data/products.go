@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-// Product defines the structure for an API product
 type Product struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`
@@ -24,15 +23,13 @@ func (p *Product) FromJSON(r io.Reader) error {
 	return e.Decode(p)
 }
 
-// Products is a collection of Product
 type Products []*Product
 
-func (p *Products) ToJSON(w io.Writer) error {
+func (p *Products) SendAsJSON(w io.Writer) error {
 	e := json.NewEncoder(w)
 	return e.Encode(p)
 }
 
-// GetProducts returns a list of products
 func GetProducts() Products {
 	return productList
 }
@@ -71,10 +68,8 @@ func getNextID() int {
 	return lp.ID + 1
 }
 
-// productList is a hard coded list of products for this
-// example data source
 var productList = []*Product{
-	&Product{
+	{
 		ID:          1,
 		Name:        "Latte",
 		Description: "Frothy milky coffee",
@@ -83,7 +78,7 @@ var productList = []*Product{
 		CreatedOn:   time.Now().UTC().String(),
 		UpdatedOn:   time.Now().UTC().String(),
 	},
-	&Product{
+	{
 		ID:          2,
 		Name:        "Espresso",
 		Description: "Short and strong coffee without milk",
