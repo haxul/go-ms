@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"github.com/gorilla/mux"
 	"github.com/haxul/go-ms/data"
 	"log"
@@ -18,7 +19,6 @@ func NewProducts(l *log.Logger) *Products {
 
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle GET Products")
-	rw.Header().Set("Content-Type", "Application/json")
 	lp := data.GetProducts()
 	err := lp.SendAsJSON(rw)
 	if err != nil {
@@ -35,15 +35,9 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	rw.Header().Set("Content-Type", "Application/json")
-	incomingProduct := &data.Product{}
-	err = incomingProduct.FromJSON(req.Body)
+	incomingProduct := req.Context().Value("ProductCtx").(data.Product)
+	err = data.UpdateProduct(id, &incomingProduct)
 
-	if err != nil {
-		http.Error(rw, "Json parsing error", http.StatusInternalServerError)
-		return
-	}
-	err = data.UpdateProduct(id, incomingProduct)
 	if err != nil {
 		http.Error(rw, "product is not found", http.StatusNotFound)
 		return
@@ -60,18 +54,31 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, req *http.Request) {
 func (p *Products) CreateProduct(writer http.ResponseWriter, request *http.Request) {
 	p.l.Println("Handle Post request")
 
-	incProduct := &data.Product{}
-	err := incProduct.FromJSON(request.Body)
-	if err != nil {
-		http.Error(writer, "Json parsing error", http.StatusInternalServerError)
-		return
-	}
-
-	data.AddProduct(incProduct)
-	writer.Header().Set("Content-Type", "Application/json")
-	err = incProduct.SendAsJson(writer)
+	incProduct := request.Context().Value("ProductCtx").(data.Product)
+	data.AddProduct(&incProduct)
+	err := incProduct.SendAsJson(writer)
 	if err != nil {
 		http.Error(writer, "Send json error", http.StatusInternalServerError)
 		return
 	}
+}
+
+func (p *Products) MiddlewareValidation(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		incProduct := &data.Product{}
+		err := incProduct.FromJSON(r.Body)
+		if err != nil {
+			http.Error(rw, "Json parsing error", http.StatusInternalServerError)
+			return
+		}
+		ctx := context.WithValue(r.Context(), "ProductCtx", incProduct)
+		next.ServeHTTP(rw, r.WithContext(ctx))
+	})
+}
+
+func (p *Products) MiddlewareAddJsonHeader(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		writer.Header().Set("Content-Type", "application/json")
+		next.ServeHTTP(writer, request)
+	})
 }

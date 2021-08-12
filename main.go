@@ -23,12 +23,18 @@ func main() {
 
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/products", ph.GetProducts)
+	getRouter.Use(ph.MiddlewareAddJsonHeader)
 
 	putRouter := sm.Methods(http.MethodPut).Subrouter()
 	putRouter.HandleFunc("/products/{id:[0-9]+}", ph.UpdateProduct)
+	putRouter.Use(ph.MiddlewareValidation)
+	putRouter.Use(ph.MiddlewareAddJsonHeader)
 
-	portRouter := sm.Methods(http.MethodPost).Subrouter()
-	portRouter.HandleFunc("/products", ph.CreateProduct)
+	postRouter := sm.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/products", ph.CreateProduct)
+	postRouter.Use(ph.MiddlewareValidation)
+	postRouter.Use(ph.MiddlewareAddJsonHeader)
+
 	s := http.Server{
 		Addr:         ":9090",           // configure the bind address
 		Handler:      sm,                // set the default handler
