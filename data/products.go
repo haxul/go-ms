@@ -23,6 +23,11 @@ func (p *Product) FromJSON(r io.Reader) error {
 	return e.Decode(p)
 }
 
+func (p *Product) SendAsJson(w io.Writer) error {
+	encoder := json.NewEncoder(w)
+	return encoder.Encode(p)
+}
+
 type Products []*Product
 
 func (p *Products) SendAsJSON(w io.Writer) error {

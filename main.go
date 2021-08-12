@@ -21,9 +21,14 @@ func main() {
 	// create a new serve mux and register the handlers
 	sm := mux.NewRouter()
 
-	getRouter := sm.Methods("GET").Subrouter()
+	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/products", ph.GetProducts)
 
+	putRouter := sm.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/products/{id:[0-9]+}", ph.UpdateProduct)
+
+	portRouter := sm.Methods(http.MethodPost).Subrouter()
+	portRouter.HandleFunc("/products", ph.CreateProduct)
 	s := http.Server{
 		Addr:         ":9090",           // configure the bind address
 		Handler:      sm,                // set the default handler
