@@ -3,19 +3,28 @@ package data
 import (
 	"encoding/json"
 	"fmt"
+	validator2 "github.com/go-playground/validator"
 	"io"
 	"time"
 )
 
 type Product struct {
 	ID          int     `json:"id"`
-	Name        string  `json:"name"`
+	Name        string  `json:"name" validate:"required"`
 	Description string  `json:"description"`
-	Price       float32 `json:"price"`
-	SKU         string  `json:"sku"`
+	Price       float32 `json:"price" validate:"gt=0"`
+	SKU         string  `json:"sku" validate:"required,sku"`
 	CreatedOn   string  `json:"-"`
 	UpdatedOn   string  `json:"-"`
 	DeletedOn   string  `json:"-"`
+}
+
+func (p *Product) Validate() error {
+	validator := validator2.New()
+	_ = validator.RegisterValidation("sku", func(fl validator2.FieldLevel) bool {
+		return len(fl.Field().String()) != 0
+	})
+	return validator.Struct(p)
 }
 
 func (p *Product) FromJSON(r io.Reader) error {
