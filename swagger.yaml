@@ -1,6 +1,15 @@
 basePath: /
 consumes:
 - application/json
+definitions:
+  Logger:
+    description: |-
+      A Logger represents an active logging object that generates lines of
+      output to an io.Writer. Each logging operation makes a single call to
+      the Writer's Write method. A Logger can be used simultaneously from
+      multiple goroutines; it guarantees to serialize access to the Writer.
+    type: object
+    x-go-package: log
 info:
   description: Documentation for Product API
   title: of Product API
@@ -8,15 +17,22 @@ info:
 paths:
   /products:
     get:
-      description: |-
-        Returns a list of products
-        responses
-        200: productsResponse
+      description: Returns a list of products
       operationId: listProducts
+      responses:
+        "200":
+          $ref: '#/responses/Products'
       tags:
       - products
 produces:
 - application/json
+responses:
+  Products:
+    description: ""
+    headers:
+      l: {}
+    schema:
+      $ref: '#/definitions/Logger'
 schemes:
 - http
 swagger: "2.0"

@@ -24,6 +24,7 @@ import (
 	"strconv"
 )
 
+//swagger:response Products
 type Products struct {
 	l *log.Logger
 }
@@ -34,8 +35,8 @@ func NewProducts(l *log.Logger) *Products {
 
 //swagger:route GET /products products listProducts
 //Returns a list of products
-// responses
-// 200: productsResponse
+// responses:
+// 200: Products
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle GET Products")
 	lp := data.GetProducts()
