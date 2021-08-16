@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	handlers2 "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/haxul/go-ms/handlers"
 	"log"
@@ -21,9 +22,14 @@ func main() {
 	// create a new serve mux and register the handlers
 	sm := mux.NewRouter()
 
+	fh := handlers.NewFiles()
+
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.PathPrefix("/files/").Handler(http.StripPrefix("/files/",
+		http.FileServer(http.Dir("./files"))))
+
 	getRouter.HandleFunc("/products", ph.GetProducts)
-	getRouter.Use(ph.MiddlewareAddJsonHeader)
+	//getRouter.Use(ph.MiddlewareAddJsonHeader)
 
 	putRouter := sm.Methods(http.MethodPut).Subrouter()
 	putRouter.HandleFunc("/products/{id:[0-9]+}", ph.UpdateProduct)
@@ -32,8 +38,12 @@ func main() {
 
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/products", ph.CreateProduct)
-	postRouter.Use(ph.MiddlewareValidation)
-	postRouter.Use(ph.MiddlewareAddJsonHeader)
+	//postRouter.Use(ph.MiddlewareValidation)
+	//postRouter.Use(ph.MiddlewareAddJsonHeader)
+	postRouter.HandleFunc("/images", fh.SaveFile)
+
+	options := handlers2.AllowedOrigins([]string{"http://localhost:3000"})
+	handlers2.CORS(options)
 
 	s := http.Server{
 		Addr:         ":9090",           // configure the bind address
