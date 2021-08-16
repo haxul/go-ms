@@ -55,8 +55,8 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	incomingProduct := req.Context().Value("ProductCtx").(data.Product)
-	err = data.UpdateProduct(id, &incomingProduct)
+	incomingProduct := req.Context().Value("ProductCtx").(*data.Product)
+	err = data.UpdateProduct(id, incomingProduct)
 
 	if err != nil {
 		http.Error(rw, "product is not found", http.StatusNotFound)
@@ -74,8 +74,8 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, req *http.Request) {
 func (p *Products) CreateProduct(writer http.ResponseWriter, request *http.Request) {
 	p.l.Println("Handle Post request")
 
-	incProduct := request.Context().Value("ProductCtx").(data.Product)
-	data.AddProduct(&incProduct)
+	incProduct := request.Context().Value("ProductCtx").(*data.Product)
+	data.AddProduct(incProduct)
 	err := incProduct.SendAsJson(writer)
 	if err != nil {
 		http.Error(writer, "Send json error", http.StatusInternalServerError)
