@@ -23,12 +23,12 @@ func main() {
 	sm := mux.NewRouter()
 
 	fh := handlers.NewFiles()
-
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.PathPrefix("/files/").Handler(http.StripPrefix("/files/",
 		http.FileServer(http.Dir("./files"))))
-
 	getRouter.HandleFunc("/products", ph.GetProducts)
+	mv := handlers.GZipHandler{}
+	getRouter.Use(mv.GzipMiddleware)
 	//getRouter.Use(ph.MiddlewareAddJsonHeader)
 
 	putRouter := sm.Methods(http.MethodPut).Subrouter()
